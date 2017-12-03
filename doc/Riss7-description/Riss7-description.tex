@@ -1,0 +1,105 @@
+\documentclass[conference]{IEEEtran}
+% packages
+\usepackage{xspace}
+\usepackage{hyperref}
+\usepackage{todonotes}
+\usepackage{tikz}
+\usepackage[utf8]{inputenc}
+
+%  commands
+% \newcommand{\todo}[1]{$\langle\!\langle$\marginpar[\raggedleft$\triangleright\triangleright\triangleright$]{$\triangleleft\triangleleft\triangleleft$}\textsf{#1}$\rangle\!\rangle$}
+\def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
+\def\ea{\,et\,al.\ }
+
+\begin{document}
+	
+% paper title
+\title{Riss 7}
+
+% author names and affiliations
+% use a multiple column layout for up to three different
+% affiliations
+\author{
+\IEEEauthorblockN{Norbert Manthey}
+% \IEEEauthorblockA{Dresden,\\ Germany}
+}
+
+\maketitle
+
+\def\coprocessor{\textsc{Coprocessor}\xspace}
+\def\glucose{\textsc{Glucose~2.2}\xspace}
+\def\minisat{\textsc{Minisat~2.2}\xspace}
+\def\riss{\textsc{Riss}\xspace}
+\def\SATPin{\textsc{SATPin}\xspace}
+
+% the abstract is optional
+\begin{abstract}
+The sequential SAT solver \riss combines the Minisat-style solving engine of \glucose with a state-of-the-art preprocessor \textsc{Coprocessor} and adds many modifications to the search process. 
+\riss allows to use inprocessing based on \coprocessor.
+Most recent changes focus mainly in incremental solving.
+\end{abstract}
+
+\section{Introduction}
+
+The CDCL solver \riss is a highly configurable SAT solver based on \textsc{Minisat}~\cite{EenS:2003} and \glucose ~\cite{AudemardS:2009,Audemard:2012:RRS:2405292.2405308}. 
+Besides many search algorithm extensions, \riss is equipped with the preprocessor \textsc{Coprocessor}~\cite{Manthey:2012}. 
+The solvers supports, emitting DRAT proofs for many techniques, enumerating more than a single model, and incremental solving.
+
+This document mentions only the differences to \textsc{riss 6} that has been submitted to SAT Competition 2016. 
+% 
+Most differences are motivated by axiom pinpointing with SAT~\cite{MaPR16} that involves incremental SAT solving with many calls to the solver, where each single call has many assumption literals, and only a few conflicts.
+
+\section{Modifications of the Search}
+
+\textsc{Riss 6} used automatic configuration based on formula features. This capability has been dropped. 
+
+\section{Incremental SAT Solving with Riss}
+
+\textsc{Riss 6} used simplification that have been applied lazily during calls to the solver.
+These simplifications have been disabled.
+
+\subsection{Persistent Incremental Solving}
+
+From a generic point of view, the idea of persistent incremental calls is to follow the following rules:
+% 
+\begin{enumerate}
+ \item do not clear the trail after stopping search
+ \item in case new clauses are added, integrate them after making sure there are two literals that are not falsified
+ \item when being called with a new set of assumptions, extract the common prefix, and re-use this part of the trail
+\end{enumerate}
+% 
+This way, parts of the search can be saved, because the trail has not to be revisited each time.
+Together with the IPASIR interface, benefits of this technique are not very strong, as new assumptions have to be passed for each call to the solver each time.
+When \riss is tightly integrated into an application, e.g. \SATPin~\cite{MaPR16}, the effect is much more visible.
+
+\subsection{Applying Techniques Partially}
+
+If assumptions are given, \riss performs restarts only to the decision level where the last assumption was used as decision.
+This saves redundant work, as the first part of the trail in the solver stays fixed with assumptions (assuming the order of assumptions is not switched during search).
+
+The original implementation of \minisat executed search under assumptions until the decision literal that should be assigned next is falsified already.
+In \riss we implement \emph{Early Refined Cores}~\cite{CoreRefinementManthey2015}, which starts conflict analysis already if a conflict is found on a decision level that was reached based on assumptions only.
+This will trigger conflict analysis faster, but might produce longer conflict clauses.
+
+\subsection{Reverse Core Refinement}
+
+After a set of assumptions $A$ has been found to be infeasible, a conflict clause $C$ is produced.
+Reverse core refinement~\cite{CoreRefinementManthey2015} tries to produce a smaller clause $D \subseteq C$ by re-running a call to incremental search and using $\neg C$ as assumptions -- most importantly in the reverse order of the initial assumptions.
+
+\section{SAT Competition Specifics}
+
+\riss and \coprocessor are implemented in \CC. 
+\riss is submitted to all sequential tracks, except the \emph{random SAT} track.
+
+\section{Availability}
+
+All tools in the solver collection are available for research. 
+The source of \riss will be made publicly available under the LGPL v2 license at \url{https://github.com/nmanthey/riss-solver}.
+
+\section*{Acknowledgment}
+The author would like to thank the developers of \glucose and \minisat. 
+
+\bibliographystyle{IEEEtran}
+\bibliography{local}
+
+\end{document}
