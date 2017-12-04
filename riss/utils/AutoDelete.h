@@ -12,15 +12,15 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #ifndef RISS_AUTODELETE_H
 #define RISS_AUTODELETE_H
 
-#include <malloc.h>
+#include <cstdlib>
 
 /** this object frees a pointer before a method /statementblock is left */
-class MethodFree
+template <class T> class MethodFree
 {
-    void*& pointer;
+    T*& pointer;
   public:
-    MethodFree(void*& ptr) : pointer(ptr) {}
-    ~MethodFree() { free(pointer); pointer = 0; }   // also set pointer to 0!
+    MethodFree(T*& ptr) : pointer(ptr) {}
+    ~MethodFree() { free(pointer); pointer = nullptr; }   // also set pointer to 0!
 };
 
 #endif

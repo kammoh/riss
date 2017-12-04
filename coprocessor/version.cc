@@ -5,7 +5,7 @@
  */
 #include "coprocessor/version.h"
 
-const char* Coprocessor::gitSHA1            = "cf1a66e";
-const char* Coprocessor::gitDate            = "Sun May 28 20:45:58 2017";
+const char* Coprocessor::gitSHA1            = "2d13984-dirty";
+const char* Coprocessor::gitDate            = "Sun Dec 3 16:47:18 2017";
 const char* Coprocessor::coprocessorVersion = "7.0.0";
-const char* Coprocessor::signature          = "coprocessor 7.0.0 build cf1a66e";
+const char* Coprocessor::signature          = "coprocessor 7.0.0 build 2d13984-dirty";

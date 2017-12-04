@@ -5,7 +5,7 @@
  */
 #include "riss/utils/version.h"
 
-const char* Riss::gitSHA1         = "cf1a66e";
-const char* Riss::gitDate         = "Sun May 28 20:45:58 2017";
+const char* Riss::gitSHA1         = "2d13984-dirty";
+const char* Riss::gitDate         = "Sun Dec 3 16:47:18 2017";
 const char* Riss::solverVersion   = "7.0.0";
-const char* Riss::signature       = "riss 7.0.0 build cf1a66e";
+const char* Riss::signature       = "riss 7.0.0 build 2d13984-dirty";

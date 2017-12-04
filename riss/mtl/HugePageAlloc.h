@@ -40,14 +40,18 @@ namespace Riss
 #define ALIGN_TO_PAGE_SIZE(x) \
     (((x) + HUGE_PAGE_SIZE - 1) / HUGE_PAGE_SIZE * HUGE_PAGE_SIZE)
 
+#if __linux__
+    #define MMAP_FLAGS (MAP_PRIVATE | MAP_ANONYMOUS |MAP_POPULATE | MAP_HUGETLB)
+#else
+    #define MMAP_FLAGS (MAP_PRIVATE | MAP_ANONYMOUS)
+#endif
+
 static inline
 void *malloc_huge_pages(size_t size)
 {
     // Use 1 extra page to store allocation metadata
     size_t real_size = ALIGN_TO_PAGE_SIZE(size + HUGE_PAGE_SIZE);
-    char *ptr = (char *)mmap(NULL, real_size, PROT_READ | PROT_WRITE,
-                             MAP_PRIVATE | MAP_ANONYMOUS |
-                             MAP_POPULATE | MAP_HUGETLB, -1, 0);
+    char *ptr = (char *)mmap(NULL, real_size, PROT_READ | PROT_WRITE, MMAP_FLAGS, -1, 0);
     if (ptr == MAP_FAILED) {
         // The mmap() call failed. Try to malloc instead
         ptr = (char *)malloc(real_size);

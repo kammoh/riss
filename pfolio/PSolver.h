@@ -14,6 +14,49 @@ Copyright (c) 2014,      Norbert Manthey, LGPL v2, see LICENSE
 
 #include "pthread.h"
 
+#ifdef __FreeBSD__
+# if __FreeBSD_version >= 700110
+#   include
+#   include
+#   define cpu_set_t cpuset_t
+# define SET_AFFINITY(pid, size, mask) \
+  cpuset_setaffinity(CPU_LEVEL_WHICH, CPU_WHICH_TID, -1, size, mask)
+# define GET_AFFINITY(pid, size, mask) \
+  cpuset_getaffinity(CPU_LEVEL_WHICH, CPU_WHICH_TID, -1, size, mask)
+# else
+#   error "This version of FreeBSD does not support cpusets"
+# endif /* __FreeBSD_version */
+#elif __APPLE__
+#include <mach/mach_init.h>
+#include <mach/thread_policy.h>
+
+# define cpu_set_t thread_affinity_policy_data_t
+# define CPU_SET(cpu_id, new_mask) \
+  (*new_mask.affinity_tag = (cpu_id + 1))
+# define CPU_ZERO(new_mask) \
+  (*new_mask.affinity_tag == THREAD_AFFINITY_TAG_NULL)
+#   define SET_AFFINITY(pid, size, mask) \
+  thread_policy_set(mach_thread_self(), THREAD_AFFINITY_POLICY, (thread_policy_t) (mask), THREAD_AFFINITY_POLICY_COUNT)
+
+
+inline void GET_AFFINITY(int pid, size_t size, thread_affinity_policy_data_t *mask) {
+    mach_msg_type_number_t cnt;
+    boolean_t get_default;
+    thread_policy_get(mach_thread_self(), THREAD_AFFINITY_POLICY, (thread_policy_t)mask, &cnt , &get_default);
+}
+
+inline bool CPU_ISSET(int cpu_id,thread_affinity_policy_data_t * mask) {
+    return mask->affinity_tag == (cpu_id + 1);
+}
+
+#else
+/* To enable CPU_ZERO and CPU_SET, etc.     */
+# define __USE_GNU
+/* For sched_getaffinity, sched_setaffinity */
+# include
+# define SET_AFFINITY(pid, size, mask) sched_setaffinity(0, size, mask)
+# define GET_AFFINITY(pid, size, mask) sched_getaffinity(0, size, mask)
+#endif /* __FreeBSD__ */
 
 namespace Riss
 {

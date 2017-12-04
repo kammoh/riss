@@ -20,18 +20,19 @@ include_directories(${LIBRT_INCLUDES})
 # 
 set(VERSION_CC ${CMAKE_CURRENT_SOURCE_DIR}/utils/version.cc)
 set(LIB_SOURCES
-    librissc.cc
-    ipasir.cc
-    core/CoreConfig.cc
-    core/Solver.cc
-    core/EnumerateMaster.cc
-    simp/SimpSolver.cc
-    utils/Compression.cc
-    utils/SimpleGraph.cc
-    utils/Options.cc
-    utils/Statistics-mt.cc
-    utils/System.cc
-    ${VERSION_CC})
+        librissc.cc
+        ipasir.cc
+        core/CoreConfig.cc
+        core/Solver.cc
+        core/EnumerateMaster.cc
+        simp/SimpSolver.cc
+        utils/Compression.cc
+        utils/SimpleGraph.cc
+        utils/Options.cc
+        utils/Statistics-mt.cc
+        utils/System.cc
+        utils/timing_mach.cc
+        ${VERSION_CC})
 
 add_library(riss-lib-static STATIC ${LIB_SOURCES})
 add_library(riss-lib-shared SHARED ${LIB_SOURCES})
@@ -39,21 +40,26 @@ add_library(riss-lib-object OBJECT ${LIB_SOURCES})
 
 message(STATUS "Libs: ${ZLIB_LIBRARY} ${LIBRT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}")
 
-target_link_libraries(riss-lib-shared z pthread rt)
-target_link_libraries(riss-lib-static z pthread rt)
+if (LIBRT_FOUND)
+else ()
+    set(LIBRT_LIBRARIES "")
+endif ()
+
+target_link_libraries(riss-lib-shared coprocessor-lib-shared z pthread ${LIBRT_LIBRARIES})
+target_link_libraries(riss-lib-static z pthread ${LIBRT_LIBRARIES})
 
 set_target_properties(riss-lib-static PROPERTIES
-                                      OUTPUT_NAME "riss")
+        OUTPUT_NAME "riss")
 set_target_properties(riss-lib-shared PROPERTIES
-                                      OUTPUT_NAME "riss" 
-                                      LINK_FLAGS "-Wl,-rpath,'$ORIGIN' -L../lib"
-                                      VERSION ${VERSION}
-                                      SOVERSION ${SOVERSION})
+        OUTPUT_NAME "riss"
+        LINK_FLAGS "-Wl,-rpath,'$ORIGIN' -L../lib"
+        VERSION ${VERSION}
+        SOVERSION ${SOVERSION})
 
 git_signature(PROJECT_NAME "riss"
-              SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/utils/version.cmake
-              VERSION ${VERSION}
-              DESTINATION ${VERSION_CC})
+        SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/utils/version.cmake
+        VERSION ${VERSION}
+        DESTINATION ${VERSION_CC})
 
 # 
 # Executables
@@ -61,38 +67,38 @@ git_signature(PROJECT_NAME "riss"
 add_executable(riss-core core/Main.cc)
 add_executable(riss-simp simp/Main.cc)
 
-if(CLASSIFIER)
-  set_target_properties(riss-core PROPERTIES COMPILE_FLAGS "-DCLASSIFIER")
-  set_target_properties(riss-simp PROPERTIES COMPILE_FLAGS "-DCLASSIFIER")
-endif()
+if (CLASSIFIER)
+    set_target_properties(riss-core PROPERTIES COMPILE_FLAGS "-DCLASSIFIER")
+    set_target_properties(riss-simp PROPERTIES COMPILE_FLAGS "-DCLASSIFIER")
+endif ()
 
 # Create a symlink to the binary as shortcut
-add_custom_command(TARGET  riss-core POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E create_symlink riss-core ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/riss)
-add_custom_command(TARGET  riss-simp POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E create_symlink riss-simp ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/riss)
+add_custom_command(TARGET riss-core POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink riss-core ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/riss)
+add_custom_command(TARGET riss-simp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink riss-simp ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/riss)
 
-if(STATIC_BINARIES)
-  target_link_libraries(riss-core riss-lib-static coprocessor-lib-static)
-  target_link_libraries(riss-simp riss-lib-static coprocessor-lib-static)
+if (STATIC_BINARIES)
+    target_link_libraries(riss-core riss-lib-static coprocessor-lib-static)
+    target_link_libraries(riss-simp riss-lib-static coprocessor-lib-static)
 
-  if(CLASSIFIER)
-    target_link_libraries(riss-core classifier-lib-static libpca-static)
-    target_link_libraries(riss-simp classifier-lib-static libpca-static)
-   endif()
-else()
-  target_link_libraries(riss-core riss-lib-shared coprocessor-lib-shared)
-  target_link_libraries(riss-simp riss-lib-shared coprocessor-lib-shared)
+    if (CLASSIFIER)
+        target_link_libraries(riss-core classifier-lib-static libpca-static)
+        target_link_libraries(riss-simp classifier-lib-static libpca-static)
+    endif ()
+else ()
+    target_link_libraries(riss-core riss-lib-shared coprocessor-lib-shared)
+    target_link_libraries(riss-simp riss-lib-shared coprocessor-lib-shared)
 
-  if(CLASSIFIER)
-    target_link_libraries(riss-core classifier-lib-shared libpca-shared)
-    target_link_libraries(riss-simp classifier-lib-shared libpca-shared)
-   endif()
-endif()
+    if (CLASSIFIER)
+        target_link_libraries(riss-core classifier-lib-shared libpca-shared)
+        target_link_libraries(riss-simp classifier-lib-shared libpca-shared)
+    endif ()
+endif ()
 
 # Installation:
 # 
-install(TARGETS riss-lib-static riss-lib-shared riss-core riss-simp 
+install(TARGETS riss-lib-static riss-lib-shared riss-core riss-simp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

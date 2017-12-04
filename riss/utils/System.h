@@ -27,6 +27,9 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
     #include <fpu_control.h>
 #endif
 
+#include "timing_mach.h"
+
+
 #include "riss/mtl/XAlloc.h"   // to find nullptr if std11 is not used
 #include "riss/mtl/IntTypes.h"
 
@@ -98,10 +101,11 @@ static inline double Riss::wallClockTime(void)
 static inline void nanosleep(int nanoseconds)
 {
     // Nanosleep
-    struct timespec req;
+    struct timespec req = {};
     req.tv_nsec = nanoseconds;
     req.tv_sec = 0;
-    clock_nanosleep(CLOCK_MONOTONIC, 0, &req, nullptr);
+    clock_nanosleep_abstime(&req);
+    //clock_nanosleep(CLOCK_MONOTONIC, 0, &req, nullptr);
 }
 
 /** simple class that combines cpu and wall clock time */

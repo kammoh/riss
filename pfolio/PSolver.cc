@@ -78,7 +78,7 @@ PSolver::PSolver(Riss::PfolioConfig* externalConfig, const char* configName, int
     // initialize pinning to hardware cores
     hardwareCores.clear();
     cpu_set_t mask;
-    sched_getaffinity(0, sizeof(cpu_set_t), &mask);
+    GET_AFFINITY(0, sizeof(cpu_set_t), &mask);
     for (int i = 0; i < sizeof(cpu_set_t) << 3; ++i) // add all available cores to the system
         if (CPU_ISSET(i, &mask)) { hardwareCores.push_back(i); }
     if (hardwareCores.size() > threads) { hardwareCores.resize(threads); }    // use only the first required available cores!
@@ -1269,7 +1269,7 @@ void* runWorkerSolver(void* data)
         cpu_set_t mask;
         CPU_ZERO(&mask);
         CPU_SET(info.hardwareCore, &mask);
-        if (sched_setaffinity(0, sizeof(cpu_set_t), &mask) != 0) {
+        if (SET_AFFINITY(0, sizeof(cpu_set_t), &mask) != 0) {
             PcassoDebug::PRINTLN_NOTE("Failed to pin thread to core");
         }
     }

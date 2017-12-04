@@ -7,11 +7,14 @@
 
 #include "riss/utils/SimpleGraph.h"
 
-#include <math.h>
-#include <assert.h>
 #include <sstream>
+#include <vector>
 #include <iostream>
 #include <algorithm>
+
+#include <cmath>
+#include <cassert>
+
 #include "riss/mtl/Sort.h"
 #include "riss/core/SolverTypes.h"
 #include "riss/utils/community.h"
@@ -22,15 +25,15 @@
 
 using namespace std;
 
-SimpleGraph::SimpleGraph(int size, bool computingDerivative) :
+SimpleGraph::SimpleGraph(size_t size, bool computingDerivative) :
     node(size),
     nodeDeg(size, 0),
-    pagerank(size, 0)
+    pagerank(size, 0),
+    size(size),
+    mergeAtTheEnd(true)
 {
   
     // TODO Auto-generated constructor stub
-    this->size = size;
-    this->mergeAtTheEnd = true;
     addedDirectedEdge = false;
     addedUndirectedEdge = false;
     intermediateSort = true;
@@ -41,14 +44,14 @@ SimpleGraph::SimpleGraph(int size, bool computingDerivative) :
     
 }
 
-SimpleGraph::SimpleGraph(int size, bool mergeAtTheEnd, bool computingDerivative) :
+SimpleGraph::SimpleGraph(size_t  size, bool mergeAtTheEnd, bool computingDerivative) :
     node(size),
     nodeDeg(size, 0),
-    pagerank(size, 0)
+    pagerank(size, 0),
+    size(size),
+    mergeAtTheEnd(mergeAtTheEnd)
 {
     // TODO Auto-generated constructor stub
-    this->size = size;
-    this->mergeAtTheEnd = mergeAtTheEnd;
     addedDirectedEdge = false;
     addedUndirectedEdge = false;
     intermediateSort = true;

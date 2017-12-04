@@ -1022,7 +1022,7 @@ void BoundedVariableElimination::parallelBVE(CoprocessorData& data, const bool d
     Heap<VarOrderBVEHeapLt> newheap(comp);
     #ifdef __APPLE__
     BVEWorkData *workData = new BVEWorkData[ controller.size() ];
-    MethodFree mf(workData);
+    MethodFree<BVEWorkData> mf(workData);
     #else
     BVEWorkData workData[controller.size()];
     #endif

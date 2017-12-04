@@ -4,7 +4,6 @@ Copyright (c) 2013, Norbert Manthey, LGPL v2, see LICENSE
 
 #include "FourierMotzkin.h"
 #include "riss/mtl/Sort.h"
-#include <bits/algorithmfwd.h>
 
 using namespace Riss;
 using namespace std;

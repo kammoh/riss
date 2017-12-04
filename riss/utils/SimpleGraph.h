@@ -52,8 +52,8 @@ class SimpleGraph
     
     
 protected:
-    std::vector <double> narity;  
-    int size;
+    std::vector <double> narity;
+	size_t size;
     std::vector<adjacencyList> node;
     std::vector<int> nodeDeg;
     std::vector<std::set<int>> communityneighbors;
@@ -87,8 +87,8 @@ protected:
     std::vector<int> getAdjacency(int adjnode); /// collect all edges without weight (performs copy!)
     void getAdjacency(int adjnode, std::vector<int>& adj); /// collect all edges without weight (performs copy, but uses the given vector)
     
-    SimpleGraph(int nodes, bool computingDerivative);
-    SimpleGraph(int nodes, bool merge, bool computingDerivative);
+    SimpleGraph(size_t nodes, bool computingDerivative);
+    SimpleGraph(size_t nodes, bool merge, bool computingDerivative);
     virtual ~SimpleGraph();
     void addUndirectedEdge(int nodeA, int nodeB);
     void addUndirectedEdge(int nodeA, int nodeB, double weight);
